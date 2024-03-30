@@ -1,0 +1,1 @@
+c:\python27\python novasolve.py --gui %1 %2 %3 %4 %5 %6 %7 %8 %9
