@@ -11,38 +11,42 @@ class drvr():
         self.p19.off()
         self.p20.on()
         self.p21.off()
-        self.list = [1,2,3,4]
 
     def step(self):
         self.PIN_LOW.off()
         self.PIN_HIGH.on()
-        print('off: ',self.PIN_LOW)
-        print('on: ',self.PIN_HIGH)
 
     def run(self):
-        angle = float(input("Please enter angle: "))
+        #angle = float(input("Please enter angle: "))
+        angle = float(360)
         count = int(angle*1/1.8)
-        print(count)
+        list = [1,2,3,4]
+
+
+        if count < 0:
+            count = -count
+            list = [4,3,2,1]
+
         for i in range(count):
-            if self.list[0] == 1:
+            if list[0] == 1:
                 self.PIN_LOW = self.p18
                 self.PIN_HIGH = self.p19
                 print(1)
-            if self.list[0] == 2:
+            if list[0] == 2:
                 self.PIN_LOW = self.p20
                 self.PIN_HIGH = self.p21
                 print(2)
-            if self.list[0] == 3:
+            if list[0] == 3:
                 self.PIN_LOW = self.p19
                 self.PIN_HIGH = self.p18
                 print(3)
-            if self.list[0] == 4:
+            if list[0] == 4:
                 self.PIN_LOW = self.p21
                 self.PIN_HIGH = self.p20
                 print(4)
             self.step()
-            self.list.append(self.list.pop(0))
-            sleep(0.01)
+            list.append(list.pop(0))
+            sleep(0.02)
 
 drvr = drvr()
 drvr.run()

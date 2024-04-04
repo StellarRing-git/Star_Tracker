@@ -1,9 +1,14 @@
 from machine import Pin, Timer
 
+x = int(angle)
 
+led = Pin(x, Pin.OUT)
+timer = Timer()
+from time import sleep
 
-led1 = Pin(21, Pin.OUT)
-led2 = Pin(20, Pin.OUT)
+def blink():
+    led.toggle()
 
-led2.on()
-led1.off()
+while True:
+    blink()
+    sleep(0.5)

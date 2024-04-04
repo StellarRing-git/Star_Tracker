@@ -98,6 +98,7 @@ class Client(object):
             data = urlencode(data)
             data = data.encode('utf-8')
             print('Sending data:', data)
+            print("sending",data)
             headers = {}
 
         request = Request(url=url, headers=headers, data=data)
