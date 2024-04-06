@@ -12,7 +12,6 @@ import requests
 from urllib.request import urlopen, Request
 from astropy.table import Table
 import subprocess
-import shutil
 import math
 
 
@@ -34,6 +33,7 @@ class Trckr():
         i = 0
         self.count_annote = 0
         self.ref_bol = True
+        self.negative = False
         while True:
             files_1 = [os.path.normpath(i) for i in glob.glob(folder_path)]
 
@@ -217,9 +217,34 @@ class Trckr():
         angle = self.K * ((self.fov * self.change) /  self.width) 
         print(angle)
 
+        count = int(angle*1/1.8)
+        self.list = [1,2,3,4]
+
+        if angle < 0 and self.negative == False:
+            self.list.reverse()
+            count = -count
+            for i in range(count+1):
+                self.list.append(self.list.pop(0))
+            print(self.list)
+            self.negative = True
+
+        elif angle < 0:
+            self.list.reverse()
+            print(self.list)
+
+        else:
+            for i in range(count):
+                self.list.append(self.list.pop(0))
+        print(self.list)
+
+
+        list_replace = str('/' + str(self.list[0]) + '/')
+        print(list_replace)
+
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
             sys.stdout.write(line.replace('angle_replace', str(angle)))  
-
+        for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
+            sys.stdout.write(line.replace('list_replace', list_replace))  
 
         os.system('cmd /c ampy --port COM5 put Mtr_Driver.pyi')
         print('put')
@@ -229,6 +254,8 @@ class Trckr():
 
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
             sys.stdout.write(line.replace(str(angle), 'angle_replace'))  
+        for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
+            sys.stdout.write(line.replace(list_replace, 'list_replace'))  
 
 
 

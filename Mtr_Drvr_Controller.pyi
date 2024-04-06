@@ -16,40 +16,15 @@ class drvr():
         self.PIN_LOW.off()
         self.PIN_HIGH.on()
 
-    def run(self):
-        angle = float('angle_replace')
+    def run(self,angle):
+        print(angle)
         count = int(angle*1/1.8)
-
         list = [1,2,3,4]
-        list_count = 'list_replace'
-        list_count = int(list_count.replace('/', ''))
+
 
         if count < 0:
             count = -count
-            list.reverse()
-
-        for i in range(list_count-1):
-            list.append(list.pop(0))
-
-        if list[0] == 1 or list[0] == 4:
-            self.p18.on()
-            self.p19.off()
-            self.p20.on()
-            self.p21.off()
-            print('1 or 4')
-
-        if list[0] == 2:
-            self.p18.off()
-            self.p19.on()
-            self.p20.off()
-            self.p21.on()
-
-        if list[0] == 2:
-            self.p18.on()
-            self.p19.off()
-            self.p20.off()
-            self.p21.on()
-
+            list = [4,3,2,1]
 
         for i in range(count):
             if list[0] == 1:
@@ -67,5 +42,37 @@ class drvr():
             self.step()
             list.append(list.pop(0))
             sleep(0.1)
+
+
+
+
 drvr = drvr()
-drvr.run()
+
+while True:
+    key = input("press key: ")
+    if key == ',':
+        print(',')
+        drvr.run(5)
+    elif key == '.':
+        print('.')
+        drvr.run(-5)
+    elif key == 'k':
+        print('<')
+        drvr.run(10)
+    elif key == 'l':
+        print('>')
+        drvr.run(-10)
+    else:
+        try:
+            key = float(key)
+            drvr.run(key)
+        except:
+            print("invalid key")
+
+    sleep(0.01)
+    # else:
+    #     try:
+    #         print('key')
+    #         drvr.run(key())
+    #     except:
+    #         print("Invalid")
