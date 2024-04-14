@@ -29,11 +29,15 @@ class Trckr():
         self.fov = (360*math.atan(22.3/(2*self.fl)))/math.pi
         print(self.fov)
         self.K = float(input("Constant K: "))
-        folder_path = "C:\\Users\\tejas\\OneDrive\\Pictures\\Test\\*.CR2"
+        folder_path = "C:\\Users\\tejas\\OneDrive\\Pictures\\Test\\*.jpg"
         self.files = [os.path.normpath(i) for i in glob.glob(folder_path)]
         i = 0
         ref = True
-        while True:
+        self.negative = None
+        self.list = [1,2,3,4]
+        self.running = True
+
+        while self.running == True:
             files_1 = [os.path.normpath(i) for i in glob.glob(folder_path)]
 
             try:
@@ -79,31 +83,76 @@ class Trckr():
 
 
     def Astrometry(self,filename):
-        img = Image.open(filename)
-        self.width = img.width 
-        self.height = img.height 
-        rgb_img = img.convert('RGB')
-        file_name = os.path.basename(filename)
-        file_without_ext = os.path.splitext(file_name)[0]
-        self.jpg_filename = str("C:\\Users\\tejas\\OneDrive\\Pictures\\Test\\" + file_without_ext + ".jpg")
-        rgb_img.save(self.jpg_filename)
-        
-        jpg = cv.imread(self.jpg_filename)
+        jpg = cv.imread(filename)
         gray = cv.cvtColor(jpg, cv.COLOR_BGR2GRAY)
         gray = cv.GaussianBlur(gray, (5, 5), 0)
         (minVal, maxVal, minLoc, maxLoc) = cv.minMaxLoc(gray)
         self.pos_x=(np.array(maxLoc)[0])
+        self.width = jpg.shape[1]
 
     
 
     def calc_angle(self):
         print("calculating Angle")
-        angle = self.K * ((self.fov * self.change_x) /  self.width) 
+        angle = self.K * ((self.fov * self.change_x) /  (2 * self.width)) 
+        count = int(angle*1/1.8)
         print(angle)
 
-        for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
-            sys.stdout.write(line.replace('angle_replace', str(angle)))  
+        print(self.list)
 
+        if count < 0 and self.negative == None:
+            self.negative = 0 
+        elif count > 0 and self.negative == None:
+            self.negative = 3
+                        
+        if count < 0 and self.negative == 0:
+            self.list.reverse()
+            count = -count
+            print(self.list)
+
+            for i in range(count+1):
+                self.list.append(self.list.pop(0))
+                print(self.list)
+
+            self.file_replace(angle)
+            print('negative')
+            self.negative = 1
+
+        elif count < 0 and self.negative == 1:
+            for i in range(count):
+                self.list.append(self.list.pop(0))
+                print(self.list)
+                
+            self.file_replace(angle)
+
+        elif count > 0 and self.negative == 3:
+            for i in range(count):
+                self.list.append(self.list.pop(0))
+                print(self.list)
+            
+            self.negative = 3
+            print('positive')
+            self.file_replace(angle)
+
+        elif count > 0 and self.negative == 1:
+            print('Error: Unexpected change in direction, please check your camera movement')
+            self.running = False
+
+        elif count < 0 and self.negative == 3:
+            print('Error: Unexpected change in direction, please check your camera movement')
+            self.running = False
+
+        print(self.list)
+
+
+    def file_replace(self, angle):
+        angle_replace = str('/' + str(angle) + '/')
+        list_replace = str('/' + str(self.list[0]) + '/')
+
+        for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
+            sys.stdout.write(line.replace('angle_replace', angle_replace))  
+        for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
+            sys.stdout.write(line.replace('self.list_replace',list_replace))  
 
         os.system('cmd /c ampy --port COM5 put Mtr_Driver.pyi')
         print('put')
@@ -112,8 +161,10 @@ class Trckr():
         os.system('cmd /c ampy --port COM5 run Mtr_Driver.pyi')
 
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
-            sys.stdout.write(line.replace(str(angle), 'angle_replace'))  
-    
+            sys.stdout.write(line.replace(angle_replace, 'angle_replace'))  
+        for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
+            sys.stdout.write(line.replace(list_replace, 'self.list_replace')) 
+
 
     def extract_xy(self,data):
         while True:
@@ -129,8 +180,4 @@ class Trckr():
 
 
 
-
-
-
 Trckr = Trckr()
-#Trckr.__init__()
