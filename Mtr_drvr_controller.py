@@ -1,4 +1,3 @@
-
 import sys
 import fileinput
 import os
@@ -13,7 +12,7 @@ class Trckr():
         self.running = True
         while self.running == True:
             angle = float(input('Angle: '))
-            count = int(angle*1/1.8)
+            count = int((angle*1/1.8)*3)        # To account for angle per step and gear ratio (3:1)
             print(count)
             self.run(angle, count)
 
@@ -71,20 +70,20 @@ class Trckr():
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
             sys.stdout.write(line.replace('angle_replace', angle_replace))  
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
-            sys.stdout.write(line.replace('self.list_replace',list_replace))  
+            sys.stdout.write(line.replace('list_replace',list_replace))  
 
-        os.system('cmd /c ampy --port COM5 put Mtr_Driver.pyi')
+        os.system('cmd /c ampy --port COM8 put Mtr_Driver.pyi')
         print('put')
         sleep(1)
         print('run')
-        os.system('cmd /c ampy --port COM5 run Mtr_Driver.pyi')
+        os.system('cmd /c ampy --port COM8 run Mtr_Driver.pyi')
 
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
             sys.stdout.write(line.replace(angle_replace, 'angle_replace'))  
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
-            sys.stdout.write(line.replace(list_replace, 'self.list_replace'))  
+            sys.stdout.write(line.replace(list_replace, 'list_replace'))  
 
 
     
 
-Trckr = Trckr()
+Trckr = Trckr() 

@@ -1,33 +1,55 @@
 import os
+import sys
 import cv2 as cv
 import numpy as np
+import fileinput
+import os.path
+import re
+from time import sleep
 
-img_path = "C:\\Users\\tejas\OneDrive\\Pictures\\Test\\IMG_0710.jpg"
+def replace():
+    file_handle = open('Stel_Sim.ssc', 'r')
+    file_string = file_handle.read()
+    file_handle.close()
 
-img = cv.imread(img_path)
-img = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
-img = cv.GaussianBlur(img, (5, 5), 0)
+    angle = 2
+    subst = str('var a = '+ str(angle))
+    print(subst)
+    file_string = (re.sub('var a = angle_replace', subst, file_string))
+    print(file_string)
+
+    file_handle = open('Stel_Sim.ssc', 'w')
+    file_handle.write(file_string)
+    file_handle.close()
+
+    print('Replaced')
+    sleep(10)
 
 
-img_array = np.array(img)
-bulb = np.unravel_index(img_array.argmax(), img_array.shape)
-print(img_array.max(), bulb)
-print(img_array[bulb])
-bulb_new = np.where(img_array == img_array.min())
-print(bulb_new[0][0])
-img_array[bulb] = 255
-img_array[bulb[0], bulb[1]] = 0
-cv.circle(img_array, (bulb_new[1][0],bulb_new[0][0]), 100, 255, 100)
+    file_string = (re.sub(subst, 'var a = angle_replace', file_string))
 
-#img = cv.imread(img_path, cv.IMREAD_GRAYSCALE)
+    file_handle = open('Stem_sim.ssc', 'w')
+    file_handle.write(file_string)
+    file_handle.close()
 
-print(img_array.min(), np.unravel_index(img_array.argmin(), img_array.shape))
-bulb = np.unravel_index(img_array.argmin(), img_array.shape)
-print(bulb)
-cv.circle(img_array, (bulb[1],bulb[0]), 20, 0, 20)
-print(img_array[bulb])
 
-cv.namedWindow("img", cv.WINDOW_NORMAL)
-cv.imshow('img',img_array)
-cv.waitKey(0)
-cv.destroyAllWindows()
+# angle =  1
+# angle_replace = str(angle)
+
+# for i, line in enumerate(fileinput.input('Stel_Sim.ssc', inplace=True)):
+#     print line.replace('angle_replace', angle_replace))  
+
+# print('Replaced')
+# sleep(20)
+
+# for i, line in enumerate(fileinput.input('Stel_Sim.ssc', inplace=True)):
+#     sys.stdout.write(line.replace(angle_replace, 'angle_replace'))  
+
+# file = 'Stel_Sim.ssc'
+# f = open(file)
+# for line in f:
+#     if line.contains('foo'):
+#         newline = line.replace('foo', 'bar')
+#         # how to write this newline back to the file
+
+replace()

@@ -68,6 +68,6 @@ class drvr():
                 print('')
             self.step()
             list.append(list.pop(0))
-            sleep(0.5)
+            sleep(1)
 drvr = drvr()
 drvr.run()

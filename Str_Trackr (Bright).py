@@ -67,15 +67,13 @@ class Trckr():
                     sleep(3)
 
                 if i == 2 and ref == False:
-                    ref = False
-                    print('alt')
                     i = 1
+                    print('alt')
                     self.Astrometry(max_file)
                     self.alt_x = self.pos_x 
                     print('alt_x = ',self.alt_x)
                     self.change_x = self.ref_x - self.alt_x
                     self.calc_angle()
-                    self.alt_x = self.ref_x
                     sleep(3)
                 sleep(2)
 
@@ -94,7 +92,7 @@ class Trckr():
 
     def calc_angle(self):
         print("calculating Angle")
-        angle = self.K * ((self.fov * self.change_x) /  (2 * self.width)) 
+        angle = self.K * ((-4.25 * self.fov * self.change_x) /  (2 * self.width)) 
         count = int(angle*1/1.8)
         print(angle)
 
@@ -152,18 +150,17 @@ class Trckr():
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
             sys.stdout.write(line.replace('angle_replace', angle_replace))  
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
-            sys.stdout.write(line.replace('self.list_replace',list_replace))  
+            sys.stdout.write(line.replace('list_replace',list_replace))  
 
         os.system('cmd /c ampy --port COM5 put Mtr_Driver.pyi')
         print('put')
-        sleep(1)
         print('run')
         os.system('cmd /c ampy --port COM5 run Mtr_Driver.pyi')
 
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
             sys.stdout.write(line.replace(angle_replace, 'angle_replace'))  
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
-            sys.stdout.write(line.replace(list_replace, 'self.list_replace')) 
+            sys.stdout.write(line.replace(list_replace, 'list_replace')) 
 
 
     def extract_xy(self,data):

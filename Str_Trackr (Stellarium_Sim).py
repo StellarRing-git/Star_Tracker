@@ -1,16 +1,17 @@
 import sys
+import re
 import fileinput
-import cv2 as cv
 import os.path
 import os
 import glob
 import json
+import pyperclip
 from time import sleep
 import numpy as np
 from PIL import Image
 import requests
+import pyautogui as gui
 from urllib.request import urlopen, Request
-from astropy.table import Table
 import subprocess
 import math
 
@@ -23,12 +24,12 @@ class Trckr():
             pass
         return None
     
+
     def __init__(self):
-        self.fl = int(input("Focal Length: "))
-        self.fov = (360*math.atan(22.3/(2*self.fl)))/math.pi
-        print(self.fov)
-        self.K = float(input("Constant K: "))
-        folder_path = "C:\\Users\\tejas\\OneDrive\\Pictures\\Test\\*.CR2"
+        #self.fl = int(input("Focal Length: "))
+        self.fl = 35                                                            #temp
+        self.fov = 2*math.atan(22.3/(2*self.fl))
+        folder_path = "C:\\Users\\tejas\\OneDrive\\Pictures\\Stellarium\*.jpg"
         self.files = [os.path.normpath(i) for i in glob.glob(folder_path)]
         i = 0
         self.count_annote = 0
@@ -36,6 +37,7 @@ class Trckr():
         self.list = [1,2,3,4]
         self.negative = None
         self.running = True
+        self.stel_run(0)
 
         while self.running == True:
             files_1 = [os.path.normpath(i) for i in glob.glob(folder_path)]
@@ -74,19 +76,16 @@ class Trckr():
                     print('delta = ',self.change)
                     self.calc_angle()
                     sleep(3)
-                sleep(2)
-
-
+                sleep(5)
 
 
     def Astrometry(self,filename):
         img = Image.open(filename)
         self.width = img.width 
-        print(self.width)
         self.height = img.height 
         rgb_img = img.convert('RGB')
         file_name = os.path.basename(filename)
-        file_without_ext = os.path.splitext(file_name)[0]
+        file_without_ext =os.path.splitext(file_name)[0]
         self.jpg_filename = str("C:\\Users\\tejas\\OneDrive\\Pictures\\Test\\" + file_without_ext + ".jpg")
         rgb_img.save(self.jpg_filename)
         args_scale_lowerbounds = str('--scale-lower=' + str(self.fl-15))
@@ -148,10 +147,10 @@ class Trckr():
                 sleep(2)
 
         try:
-            print(self.index)
-            if dict[self.index].get('names') == self.name:
+            print(self.index, '1')
+            if dict[0].get('names') == self.name:
                 print('alt1')
-                self.alt = dict[self.index].get('pixelx')
+                self.alt = dict[0].get('pixelx')
                 self.index = None
                 print(self.alt)
 
@@ -185,8 +184,8 @@ class Trckr():
             else:
                 print("Error: Undefined Annotations")
 
-            self.name = dict[self.index].get('names')
-            self.ref = dict[self.index].get('pixelx')
+            self.name = dict[0].get('names')
+            self.ref = dict[0].get('pixelx')
 
         # fn = "C:\\Users\\tejas\Downloads\\axy.fits"
 
@@ -216,59 +215,12 @@ class Trckr():
     
 
     def calc_angle(self):
-        print("calculating Angle")
-        angle = self.K * ((-4.25 * self.fov * self.change) /  (2 * self.width)) 
-        count = int(angle*1/1.8)
-        print(angle)
+        print("Calculating Angle")
+        angle = ((self.fov * self.change)/self.width)
+        print('Angle: ', angle)
+        self.stel_run(angle)
 
-        print(self.list)
-
-        if count < 0 and self.negative == None:
-            self.negative = 0 
-        elif count > 0 and self.negative == None:
-            self.negative = 3
-                        
-        if count < 0 and self.negative == 0:
-            self.list.reverse()
-            count = -count
-            print(self.list)
-
-            for i in range(count+1):
-                self.list.append(self.list.pop(0))
-                print(self.list)
-
-            self.file_replace(angle)
-            print('negative')
-            self.negative = 1
-
-        elif count < 0 and self.negative == 1:
-            for i in range(count):
-                self.list.append(self.list.pop(0))
-                print(self.list)
-                
-            self.file_replace(angle)
-
-        elif count > 0 and self.negative == 3:
-            for i in range(count):
-                self.list.append(self.list.pop(0))
-                print(self.list)
-            
-            self.negative = 3
-            print('positive')
-            self.file_replace(angle)
-
-        elif count > 0 and self.negative == 1:
-            print('Error: Unexpected change in direction, please check your camera movement')
-            self.running = False
-
-        elif count < 0 and self.negative == 3:
-            print('Error: Unexpected change in direction, please check your camera movement')
-            self.running = False
-
-        print(self.list)
-
-
-    def file_replace(self, angle):
+    def drvr_file_replace(self, angle):
         angle_replace = str('/' + str(angle) + '/')
         list_replace = str('/' + str(self.list[0]) + '/')
 
@@ -286,7 +238,50 @@ class Trckr():
             sys.stdout.write(line.replace(angle_replace, 'angle_replace'))  
         for i, line in enumerate(fileinput.input('Mtr_Driver.pyi', inplace=1)):
             sys.stdout.write(line.replace(list_replace, 'list_replace'))  
- 
+    
+
+    def stel_run(self, angle):
+        file_handle = open('Stel_Sim.ssc', 'r')
+        file_string = file_handle.read()
+        file_handle.close()
+
+        subst = str('var a = '+ str(angle))
+        file_str = (re.sub('var a = angle_replace', subst, file_string))
+
+        file_handle = open('Stel_Sim.ssc', 'w')
+        file_handle.write(file_string)
+        file_handle.close()
+
+        print('Opening Simulator')
+        self.stel_script(file_str)
+
+        file_str = (re.sub(subst, 'var a = angle_replace', file_string))
+
+        file_handle = open('Stel_Sim.ssc', 'w')
+        file_handle.write(file_string)
+        file_handle.close()
+
+
+    def stel_script(self,file_str):
+        try:
+            win = gui.getWindowsWithTitle('Stellarium 24.3')[0]
+            win.minimize()
+            win.restore()
+            sleep(0.5)
+            gui.hotkey('f12')
+            pyperclip.copy(file_str)
+            sleep(1)
+            gui.hotkey('ctrl','a')
+            sleep(0.5)
+            gui.press('delete')
+            sleep(0.5)
+            gui.hotkey('ctrl','v')
+            sleep(0.5)
+            gui.hotkey('ctrl','enter')
+            sleep(2)
+            gui.hotkey('f12')
+        except:
+            print("Stellarium is not running")
 
 
 Trckr = Trckr()

@@ -1,14 +1,14 @@
-from machine import Pin, Timer
+from machine import Pin
+from utime import sleep
 
-x = int(angle)
+pin = Pin("LED", Pin.OUT)
 
-led = Pin(x, Pin.OUT)
-timer = Timer()
-from time import sleep
-
-def blink():
-    led.toggle()
-
+print("LED starts flashing...")
 while True:
-    blink()
-    sleep(0.5)
+    try:
+        pin.toggle()
+        sleep(0.5) 
+    except KeyboardInterrupt:
+        break
+pin.off()
+print("Finished.")

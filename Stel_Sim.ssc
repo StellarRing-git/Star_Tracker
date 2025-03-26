@@ -1,0 +1,28 @@
+//Stellarium environment setup
+core.setTimeRate(10);
+LandscapeMgr.setFlagLandscape(true);
+LandscapeMgr.setFlagAtmosphere(true);
+LandscapeMgr.setFlagFog(true);
+SolarSystem.setFlagLabels(false);
+MeteorShowers.setEnableMarker(false);
+MeteorShowers.setEnableLabels(false);
+GridLinesMgr.setFlagGridlines(false);
+StarMgr.setLabelsAmount(0);
+StelMovementMgr.setEquatorialMount(false);
+core.setGuiVisible(false);
+core.setProjectionMode("ProjectionPerspective");
+StelMovementMgr.zoomTo(25, 0.5);
+core.wait(1)
+
+//Movement
+StelMovementMgr.setEquatorialMount(true);
+var a = angle_replace
+StelMovementMgr.panView(-a, 0)
+core.wait(0.5)
+
+//Screenshot
+core.screenshot("img",false,"C:\Program Files\Stellarium\Screenshots",false,"jpg");
+
+//Change Mount
+StelMovementMgr.setEquatorialMount(false);
+core.setGuiVisible(true);
